@@ -5,12 +5,13 @@ const mongoose = require("mongoose");
 
 const graphQlSchema = require("./graphql/schema/index");
 const graphQlResolvers = require("./graphql/resolvers/index");
-const config = require("./config.json")
 
 const isAuth = require("./middleware/is-auth");
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+console.log(process.env)
 
 app.use(bodyParser.json());
 
@@ -24,6 +25,8 @@ app.use((req, res, next) => {
   next();
 });
 
+
+
 app.use(isAuth);
 
 app.use(
@@ -36,7 +39,7 @@ app.use(
 );
 
 mongoose
-  .connect(config.dburl, { useNewUrlParser: true })
+  .connect(process.env.dburl, { useNewUrlParser: true })
   .then(() => {
     console.log("Successfully connected to Mongodb");
   })

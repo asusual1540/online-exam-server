@@ -55,7 +55,7 @@ module.exports = {
     }
     const token = jwt.sign(
       { adminID: admin.id, name: admin.name, accessType: admin.accessType },
-      "Iamkira1540",
+      process.env.jwtPrivateKey,
       {
         expiresIn: "1h"
       }
