@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 
 const graphQlSchema = require("./graphql/schema/index");
 const graphQlResolvers = require("./graphql/resolvers/index");
+const config = require("./config.json")
 
 const isAuth = require("./middleware/is-auth");
 
@@ -35,7 +36,7 @@ app.use(
 );
 
 mongoose
-  .connect("mongodb://localhost:27017/oem", { useNewUrlParser: true })
+  .connect(config.dburl, { useNewUrlParser: true })
   .then(() => {
     console.log("Successfully connected to Mongodb");
   })
