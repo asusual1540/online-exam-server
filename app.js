@@ -13,17 +13,15 @@ const port = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
 
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   if (req.method === "OPTIONS") {
-//     return res.sendStatus(200);
-//   }
-//   next();
-// });
-
-
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(isAuth);
 
@@ -37,7 +35,7 @@ app.use(
 );
 
 mongoose
-  .connect("mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center", { useNewUrlParser: true })
+  .connect("mongodb://localhost/oem", { useNewUrlParser: true })
   .then(() => {
     console.log("Successfully connected to Mongodb");
   })

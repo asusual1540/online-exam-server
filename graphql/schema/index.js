@@ -66,9 +66,6 @@ type SingleQuestion {
 
 type Question {
     _id: ID!
-    courseTitle: String
-    courseCode: String
-    teacher: Teacher!
     exam: Exam!
     questions: [SingleQuestion!]
     date: String!
@@ -140,7 +137,8 @@ input SingleQuestionInput {
     options: [OptionsInput!]!
 }
 input QuestionInput {
-    questions: [SingleQuestionInput]
+    exam : String!
+    questions: [SingleQuestionInput!]!
 }
 input CourseInput {
     title: String

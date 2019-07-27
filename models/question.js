@@ -1,20 +1,6 @@
 const mongoose = require('mongoose')
 
 const questionSchema = new mongoose.Schema({
-    courseTitle: {
-        type: String,
-        minlength: 5,
-        maxlength: 100
-    },
-    courseCode: {
-        type: String,
-        minlength: 3,
-        maxlength: 100
-    },
-    teacher: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Teacher"
-    },
     exam: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Exam"

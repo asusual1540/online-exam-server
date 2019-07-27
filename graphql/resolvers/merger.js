@@ -6,7 +6,7 @@ const Answer = require('../../models/answer')
 const Result = require('../../models/result')
 const Student = require('../../models/student')
 
-async function findAdmin (adminID) {
+async function findAdmin(adminID) {
     try {
         const admin = await Admin.findById(adminID)
         return {
@@ -17,13 +17,13 @@ async function findAdmin (adminID) {
             myStudents: findStudents.bind(this, admin._doc.myStudents)
         }
     } catch (err) {
-        return new Error ("Couldnot find an admin from Merger" + err)
+        return new Error("Couldnot find an admin from Merger" + err)
     }
 }
 
-async function findTeachers (teacherIDS) {
+async function findTeachers(teacherIDS) {
     try {
-        const teachers = await Teacher.find({_id: {$in: teacherIDS}})
+        const teachers = await Teacher.find({ _id: { $in: teacherIDS } })
         return teachers.map(teacher => {
             return {
                 ...teacher._doc,
@@ -35,63 +35,63 @@ async function findTeachers (teacherIDS) {
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find an Teachers " + err)
+        return new Error("Couldnot find an Teachers " + err)
     }
 }
 
-async function findTeacher (teacherID) {
+async function findTeacher(teacherID) {
     try {
         const teacher = await Teacher.findById(teacherID)
         return {
             ...teacher._doc,
-            _id: teacher.id, 
+            _id: teacher.id,
             password: null,
             myAdmin: findAdmin.bind(this, teacher._doc.myAdmin),
-            myExams:  findExams.bind(this, teacher._doc.myExams),
-            myStudents:  findStudents.bind(this, teacher._doc.myStudents)
+            myExams: findExams.bind(this, teacher._doc.myExams),
+            myStudents: findStudents.bind(this, teacher._doc.myStudents)
         }
     } catch (err) {
-        return new Error ("Couldnot find an Teacher" + err)
+        return new Error("Couldnot find an Teacher from merger **" + err)
     }
 }
 
-async function findExams (examIDs) {
+async function findExams(examIDs) {
     try {
-        const exams = await Exam.find({_id: {$in: examIDs}})
+        const exams = await Exam.find({ _id: { $in: examIDs } })
         return exams.map(exam => {
             return {
                 ...exam._doc,
                 _id: exam.id,
                 date: new Date(exam._doc.date).toISOString(),
-                questionID: findQuestion.bind(this, exam.questionID),
-                studentIDs: findStudents.bind(this, exam.studentIDs),
-                teacherID: findTeacher.bind(this, exam.teacherID),
-                resultID: findResult.bind(this, exam.resultID),
+                question: findQuestion.bind(this, exam.question),
+                students: findStudents.bind(this, exam.students),
+                teacher: findTeacher.bind(this, exam.teacher),
+                result: findResult.bind(this, exam.result),
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find an exams " + err)
+        return new Error("Couldnot find an exams " + err)
     }
 }
-async function findExam (examID) {
+async function findExam(examID) {
     try {
         const exam = await Exam.findById(examID)
         return {
             ...exam._doc,
-            _id: exam.id, 
-            password: null,
-            questionID: findQuestion.bind(this, exam._doc.questionID),
-            teacherID:  findTeacher.bind(this, exam._doc.teacherID),
-            resultID:  findResult.bind(this, exam._doc.resultID),
-            studentIDs: findStudents.bind(this, exam._doc.studentIDs)
+            _id: exam.id,
+            question: findQuestion.bind(this, exam._doc.question),
+            teacher: findTeacher.bind(this, exam._doc.teacher),
+            result: findResult.bind(this, exam._doc.result),
+            students: findStudents.bind(this, exam._doc.students)
         }
     } catch (err) {
-        return new Error ("Couldnot find an exam " + err)
+        return new Error("Couldnot find an exam " + err)
     }
 }
-async function findQuestions (questionIDs) {
+
+async function findQuestions(questionIDs) {
     try {
-        const questions = await Question.find({_id: {$in: questionIDs}})
+        const questions = await Question.find({ _id: { $in: questionIDs } })
         return questions.map(question => {
             return {
                 ...question._doc,
@@ -102,26 +102,27 @@ async function findQuestions (questionIDs) {
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find Questions " + err)
+        return new Error("Couldnot find Questions " + err)
     }
 }
-async function findQuestion (questionID) {
+
+async function findQuestion(questionID) {
     try {
         const question = await Question.findById(questionID)
         return {
             ...question._doc,
-            _id: question.id, 
+            _id: question.id,
             teacher: findTeacher.bind(this, question._doc.teacher),
-            exam:  findExam.bind(this, question._doc.exam)
+            exam: findExam.bind(this, question._doc.exam)
         }
     } catch (err) {
-        return new Error ("Couldnot find a question " + err)
+        return new Error("Couldnot find a question " + err)
     }
 }
 
-async function findStudents (studentIDs) {
+async function findStudents(studentIDs) {
     try {
-        const students = await Student.find({_id: {$in: studentIDs}})
+        const students = await Student.find({ _id: { $in: studentIDs } })
         return students.map(student => {
             return {
                 ...student._doc,
@@ -134,16 +135,16 @@ async function findStudents (studentIDs) {
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find students " + err)
+        return new Error("Couldnot find students " + err)
     }
 }
 
-async function findStudent (studentID) {
+async function findStudent(studentID) {
     try {
         const student = await Student.findById(studentID)
         return {
             ...student._doc,
-            _id: student.id, 
+            _id: student.id,
             date: new Date(student._doc.date).toISOString(),
             myExams: findExams.bind(this, student.myExams),
             myAnswers: findAnswers.bind(this, student.myAnswers),
@@ -151,13 +152,13 @@ async function findStudent (studentID) {
             myAdmin: findAdmin.bind(this, student._doc.myAdmin)
         }
     } catch (err) {
-        return new Error ("Couldnot find a student " + err)
+        return new Error("Couldnot find a student " + err)
     }
 }
 
-async function findAnswers (answerIDs) {
+async function findAnswers(answerIDs) {
     try {
-        const answers = await Answer.find({_id: {$in: answerIDs}})
+        const answers = await Answer.find({ _id: { $in: answerIDs } })
         return answers.map(answer => {
             return {
                 ...answer._doc,
@@ -169,28 +170,29 @@ async function findAnswers (answerIDs) {
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find an answers " + err)
+        return new Error("Couldnot find an answers " + err)
     }
 }
 
-async function findAnswer (answerID) {
+async function findAnswer(answerID) {
     try {
         const answer = await Answer.findById(answerID)
         return {
             ...answer._doc,
-            _id: answer.id, 
+            _id: answer.id,
             date: new Date(answer._doc.date).toISOString(),
             student: findStudent.bind(this, answer.student),
             question: findQuestion.bind(this, answer.question),
             exam: findExam.bind(this, answer.exam)
         }
     } catch (err) {
-        return new Error ("Couldnot find an exam " + err)
+        return new Error("Couldnot find an exam " + err)
     }
 }
-async function findResults (resultIDs) {
+
+async function findResults(resultIDs) {
     try {
-        const results = await Result.find({_id: {$in: resultIDs}})
+        const results = await Result.find({ _id: { $in: resultIDs } })
         return results.map(result => {
             return {
                 ...result._doc,
@@ -201,31 +203,32 @@ async function findResults (resultIDs) {
             }
         })
     } catch (err) {
-        return new Error ("Couldnot find Results " + err)
+        return new Error("Couldnot find Results " + err)
     }
 }
-async function findResult (resultID) {
+
+async function findResult(resultID) {
     try {
         const result = await Result.findById(resultID)
         return {
             ...result._doc,
-            _id: result.id, 
+            _id: result.id,
             date: new Date(result._doc.date).toISOString(),
             student: findStudent.bind(this, result._doc.student),
-            exam:  findExam.bind(this, result._doc.exam)
+            exam: findExam.bind(this, result._doc.exam)
         }
     } catch (err) {
-        return new Error ("Couldnot find a Result " + err)
+        return new Error("Couldnot find a Result " + err)
     }
 }
 
 module.exports = {
-    findAdmin, 
-    findTeachers, 
-    findTeacher, 
-    findExams, 
-    findExam, 
-    findQuestions, 
+    findAdmin,
+    findTeachers,
+    findTeacher,
+    findExams,
+    findExam,
+    findQuestions,
     findQuestion,
     findStudents,
     findStudent,

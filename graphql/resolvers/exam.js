@@ -51,10 +51,10 @@ module.exports = {
                 return {
                     ...exam._doc,
                     date: new Date(exam._doc.date).toISOString(),
-                    questionID: findQuestion.bind(this, exam.question),
-                    studentIDs: findStudents.bind(this, exam.students),
-                    teacherID: findTeacher.bind(this, exam.teacher),
-                    resultID: findResult.bind(this, exam.result)
+                    question: findQuestion.bind(this, exam.question),
+                    students: findStudents.bind(this, exam.students),
+                    teacher: findTeacher.bind(this, exam.teacher),
+                    result: findResult.bind(this, exam.result)
                 }
             })
         } catch (err) {
@@ -86,10 +86,10 @@ module.exports = {
             return {
                 ...exam._doc,
                 date: new Date(exam._doc.date).toISOString(),
-                questionID: findQuestion.bind(this, exam.question),
-                studentIDs: findStudents.bind(this, exam.students),
-                teacherID: findTeacher.bind(this, exam.teacher),
-                resultID: findResult.bind(this, exam.result)
+                question: findQuestion.bind(this, exam.question),
+                students: findStudents.bind(this, exam.students),
+                teacher: findTeacher.bind(this, exam.teacher),
+                result: findResult.bind(this, exam.result)
             }
         } catch (err) {
             return new Error("Couldnot assign students " + err)

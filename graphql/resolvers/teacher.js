@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken")
 const Teacher = require('../../models/teacher')
 const Admin = require('../../models/admin')
 
-const { findAdmin, findExams, findStudents } = require('../resolvers/merger')
+const { findAdmin, findExams, findStudents } = require('./merger')
 
 module.exports = {
     get_all_teachers: async (args) => {

@@ -38,8 +38,7 @@ const examSchema = new mongoose.Schema({
     {
         title: String,
         code: String
-    }
-    ,
+    },
     question: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Question"
