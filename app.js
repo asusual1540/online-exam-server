@@ -35,7 +35,7 @@ app.use(
 );
 
 mongoose
-  .connect("mongodb://localhost/oem", { useNewUrlParser: true })
+  .connect("mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center", { useNewUrlParser: true })
   .then(() => {
     console.log("Successfully connected to Mongodb");
   })
