@@ -18,11 +18,13 @@ module.exports = {
                 totalTimeInMin: totalTimeInMin = 0,
                 status: status = false,
                 course: course = {},
-                teacher: teacher = ""
+                teacher: teacher = "",
+                semester: semester = "SPRING",
+                year: year = 2019
             } = args.examInput || {}
             const exam = new Exam({
                 title, code, password, totalMarks, examDate,
-                totalTimeInMin, status, course, teacher
+                totalTimeInMin, status, course, teacher, semester, year
             })
             const newTeacher = await Teacher.findById(teacher)
             if (!newTeacher) {
@@ -44,9 +46,11 @@ module.exports = {
             return new Error("Couldnot add any exams " + ex)
         }
     },
-    get_all_exams: async ({ teacherID }) => {
+    get_all_exams: async ({ teacherID, semester, year }) => {
+        console.log(semester, year)
         try {
-            const exams = await Exam.find({ teacher: teacherID })
+            const exams = await Exam.find({ teacher: teacherID, semester: semester, year: year })
+            console.log(exams)
             return exams.map(exam => {
                 return {
                     ...exam._doc,
@@ -111,7 +115,7 @@ module.exports = {
             throw new Error("server error while removing an Exam" + err)
         }
     },
-    updateExam: async ({ examUpdateInput: { _id, title, code, prevPassword, newPassword, status, totalMarks, totalTimeInMin, examDate, teacherID, course: { title: courseTitle, code: courseCode } } }, req) => {
+    updateExam: async ({ examUpdateInput: { _id, title, code, prevPassword, newPassword, status, totalMarks, totalTimeInMin, semester, year, examDate, teacherID, course: { title: courseTitle, code: courseCode } } }, req) => {
         if (req.isAuth === false || req.accessType !== 2) {
             throw new Error("Unauthenticated")
         }
@@ -127,6 +131,8 @@ module.exports = {
             exam.totalMarks = totalMarks
             exam.totalTimeInMin = totalTimeInMin
             exam.status = status
+            exam.semester = semester
+            exam.year = year
             exam.course.code = courseCode
             exam.course.title = courseTitle
 

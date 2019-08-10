@@ -58,6 +58,16 @@ const examSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Result"
     },
+    semester: {
+        type: String,
+        enum: ['SPRING', 'SUMMER', 'WINTER', 'FALL'],
+        default: 'SPRING'
+    },
+    year: {
+        type: Number,
+        enum: [2019, 2020, 2021],
+        default: 2019
+    },
     date: {
         type: Date,
         default: Date.now

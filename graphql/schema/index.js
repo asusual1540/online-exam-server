@@ -1,4 +1,4 @@
-const { buildSchema } = require("graphql");
+const { buildSchema } = require("graphql")
 
 module.exports = buildSchema(`
 type Admin {
@@ -46,6 +46,8 @@ type Exam {
     students: [Student!]
     teacher: Teacher!
     result: Result
+    semester: String!
+    year: Int!
     date: String
 }
 type Course {
@@ -92,6 +94,7 @@ type authData {
 input AdminInput {
     name: String!
     password: String!
+    secret: String!
 }
 input TeacherInput {
     name: String!
@@ -155,6 +158,8 @@ input ExamInput {
     status: Boolean
     course: CourseInput
     teacher: String!
+    semester: String!
+    year: Int!
 }
 input ExamUpdateInput {
     _id: ID!
@@ -166,6 +171,8 @@ input ExamUpdateInput {
     examDate: String
     totalTimeInMin: Int
     status: Boolean
+    semester: String
+    year: String
     course: CourseInput
     teacherID: String!
 }
@@ -174,8 +181,8 @@ type RootQuery {
     get_all_admins: [Admin!]!
     get_all_teachers (adminID: String!): [Teacher!]!
     get_all_students (teacherID: String!): [Student!]!
-    get_all_questions: [Question!]! 
-    get_all_exams (teacherID: String!): [Exam!]!
+    get_question_by_exam(examID : String!): Question
+    get_all_exams (teacherID: String!, semester: String!, year: String!): [Exam!]!
     assign_students_to_exam: [Exam!]!
     adminLogin (name: String!, password: String!) : authData!
     teacherLogin (name: String!, password: String!) : authData!
@@ -199,4 +206,4 @@ schema {
     query: RootQuery
     mutation: RootMutation
 }
-`);
+`)
