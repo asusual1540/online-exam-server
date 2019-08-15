@@ -33,8 +33,6 @@ app.use(
     graphiql: true
   })
 )
-//"mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center"
-//"mongodb://localhost/oem"
 mongoose
   .connect(
     "mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center",
@@ -50,3 +48,6 @@ mongoose
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
 })
+
+//"mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center"
+//"mongodb://localhost/oem"

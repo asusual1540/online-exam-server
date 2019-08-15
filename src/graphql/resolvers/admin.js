@@ -95,5 +95,6 @@ module.exports = {
     } catch (err) {
       return new Error("Couldnot change password of admin from resolver" + err)
     }
-  }
+  },
+  uploadFile: async (args, req) => {}
 }

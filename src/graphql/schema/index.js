@@ -176,6 +176,15 @@ input ExamUpdateInput {
     course: CourseInput
     teacherID: String!
 }
+input FileInput {
+    name: String!
+}
+
+input AssignInput {
+    examID: String!
+    teacherID: String!
+    studentIDs: [String]!
+}
 
 type RootQuery {
     get_all_admins: [Admin!]!
@@ -183,9 +192,10 @@ type RootQuery {
     get_all_students (teacherID: String!): [Student!]!
     get_question_by_exam(examID : String!): Question
     get_all_exams (teacherID: String!, semester: String!, year: String!): [Exam!]!
-    assign_students_to_exam: [Exam!]!
+    get_exam_by_code (examCode: String!) : Exam!
     adminLogin (name: String!, password: String!) : authData!
     teacherLogin (name: String!, password: String!) : authData!
+    studentLogin (examCode: String!, examPassword: String!, studentID: String!, studentPassword: String!) : authData!
 }
 type RootMutation {
     addAdmin(adminInput: AdminInput): Admin!
@@ -197,10 +207,13 @@ type RootMutation {
     addStudent(studentInput: StudentInput): Student!
     removeStudent (studentID: String!, teacherID: String!) : Student!
     updateStudent (studentUpdateInput: StudentUpdateInput) : Student!
+    assign_students_to_exam (assignInput: AssignInput): Boolean!
     updateExam (examUpdateInput: ExamUpdateInput) : Exam!
+    changeExamStatus (status: Boolean!, examID: String!) : Boolean
     addExam(examInput: ExamInput): Exam!
     removeExam(examID: String!, teacherID: String!): Exam!
-    addQuestion(questionInput: QuestionInput): Question!
+    addQuestion(questionInput: QuestionInput!): Question!
+    uploadFile: Boolean!
 }
 schema {
     query: RootQuery
