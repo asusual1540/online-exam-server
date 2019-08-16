@@ -1,12 +1,17 @@
 const Question = require("../../models/question")
 const Exam = require("../../models/exam")
+const isAuth = require("../../middleware/is-auth")
 
 const { findExam } = require("./merger")
 
 module.exports = {
-  addQuestion: async (args, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+  addQuestion: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     const examID = args.questionInput.exam
     const IncomingQuestions = [...args.questionInput.questions]
@@ -43,10 +48,13 @@ module.exports = {
       return new Error("Couldnot add any question " + ex)
     }
   },
-  get_question_by_exam: async (args, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      console.log("Unauthenticated")
-      throw new Error("Unauthenticated")
+  get_question_by_exam: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const question = await Question.findOne({ exam: args.examID })

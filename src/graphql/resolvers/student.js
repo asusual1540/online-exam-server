@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken")
 const Student = require("../../models/student")
 const Teacher = require("../../models/teacher")
 const Exam = require("../../models/exam")
+const isAuth = require("../../middleware/is-auth")
 
 const {
   findExams,
@@ -13,10 +14,13 @@ const {
 } = require("../resolvers/merger")
 
 module.exports = {
-  addStudent: async (args, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      console.log("Unauthenticated")
-      throw new Error("Unauthenticated")
+  addStudent: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     const { name, password, studentID, teacherID, status } = args.studentInput
     try {
@@ -44,7 +48,14 @@ module.exports = {
       return new Error("Couldnot find any Students " + ex)
     }
   },
-  get_all_students: async args => {
+  get_all_students: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
     try {
       const students = await Student.find({ myTeacher: args.teacherID })
       return students.map(student => {
@@ -62,11 +73,15 @@ module.exports = {
       return new Error("Couldnot find a Student " + err)
     }
   },
-  removeStudent: async ({ studentID, teacherID }, req) => {
+  removeStudent: async (parent, { studentID, teacherID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
     try {
-      if (req.isAuth === false || req.accessType !== 2) {
-        throw new Error("Unauthenticated")
-      }
       const student = await Student.findById(studentID)
       const teacher = await Teacher.findById(teacherID)
       if (!student.myTeacher.equals(teacher._id)) {
@@ -79,6 +94,7 @@ module.exports = {
     }
   },
   updateStudent: async (
+    parent,
     {
       studentUpdateInput: {
         _id,
@@ -90,12 +106,17 @@ module.exports = {
         status
       }
     },
-    req
+    ctx,
+    info
   ) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
     try {
-      if (req.isAuth === false || req.accessType !== 2) {
-        throw new Error("Unauthenticated")
-      }
       const student = await Student.findById(_id)
       const teacher = await Teacher.findById(teacherID)
       if (!student.myTeacher.equals(teacher._id)) {
@@ -118,11 +139,17 @@ module.exports = {
     }
   },
   assign_students_to_exam: async (
+    parent,
     { assignInput: { examID, teacherID, studentIDs } },
-    req
+    ctx,
+    info
   ) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const exam = await Exam.findById(examID)
@@ -154,12 +181,12 @@ module.exports = {
       return new Error("Couldnot assign students " + err)
     }
   },
-  studentLogin: async ({
-    examCode,
-    examPassword,
-    studentID,
-    studentPassword
-  }) => {
+  studentLogin: async (
+    parent,
+    { examCode, examPassword, studentID, studentPassword },
+    ctx,
+    info
+  ) => {
     try {
       const student = await Student.findOne({ studentID: studentID })
       const exam = await Exam.findOne({ code: examCode })

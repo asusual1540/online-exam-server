@@ -1,11 +1,12 @@
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const Admin = require("../../models/admin")
+const isAuth = require("../../middleware/is-auth")
 
 const { findTeachers, findStudents } = require("../resolvers/merger")
 
 module.exports = {
-  addAdmin: async args => {
+  addAdmin: async (parent, args, ctx, info) => {
     const name = args.adminInput.name
     const password = args.adminInput.password
     const secret = args.adminInput.secret
@@ -48,7 +49,7 @@ module.exports = {
       return new Error("Couldnot find any admins" + err)
     }
   },
-  adminLogin: async ({ name, password }) => {
+  adminLogin: async (parent, { name, password }, ctx, info) => {
     const admin = await Admin.findOne({ name: name })
     if (!admin) {
       throw new Error("User does not exists")
@@ -68,10 +69,13 @@ module.exports = {
       token: token
     }
   },
-  changeAdminPassword: async (args, req) => {
-    if (req.isAuth === false || req.accessType !== 1) {
-      console.log("Unauthenticated")
-      throw new Error("Unauthenticated")
+  changeAdminPassword: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 1) {
+      throw new Error("You Dont Have The Permission")
     }
     const prevPassword = args.prevPassword
     const newPassword = args.newPassword
@@ -95,6 +99,5 @@ module.exports = {
     } catch (err) {
       return new Error("Couldnot change password of admin from resolver" + err)
     }
-  },
-  uploadFile: async (args, req) => {}
+  }
 }

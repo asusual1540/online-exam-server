@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt")
 const Exam = require("../../models/exam")
 const Teacher = require("../../models/teacher")
 const Student = require("../../models/student")
+const isAuth = require("../../middleware/is-auth")
 
 const {
   findQuestion,
@@ -11,9 +12,13 @@ const {
 } = require("../resolvers/merger")
 
 module.exports = {
-  addExam: async (args, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+  addExam: async (parent, args, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const {
@@ -62,7 +67,14 @@ module.exports = {
       return new Error("Couldnot add any exams " + ex)
     }
   },
-  get_all_exams: async ({ teacherID, semester, year }) => {
+  get_all_exams: async (parent, { teacherID, semester, year }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
     try {
       const exams = await Exam.find({
         teacher: teacherID,
@@ -83,9 +95,13 @@ module.exports = {
       return new Error("Couldnot find a Exam " + err)
     }
   },
-  removeExam: async ({ examID, teacherID }, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+  removeExam: async (parent, { examID, teacherID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const exam = await Exam.findById(examID)
@@ -100,6 +116,7 @@ module.exports = {
     }
   },
   updateExam: async (
+    parent,
     {
       examUpdateInput: {
         _id,
@@ -117,10 +134,15 @@ module.exports = {
         course: { title: courseTitle, code: courseCode }
       }
     },
-    req
+    ctx,
+    info
   ) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const exam = await Exam.findById(_id)
@@ -152,9 +174,13 @@ module.exports = {
       throw new Error("server error while updating a Exam" + err)
     }
   },
-  changeExamStatus: async ({ status, examID }, req) => {
-    if (req.isAuth === false || req.accessType !== 2) {
-      throw new Error("Unauthenticated")
+  changeExamStatus: async (parent, { status, examID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
     }
     try {
       const exam = await Exam.find({ _id: examID })
@@ -167,14 +193,17 @@ module.exports = {
       throw new Error("Could not change status of the exam" + ex)
     }
   },
-  get_exam_by_code: async ({ examCode }, req) => {
-    // if (req.isAuth === false || req.accessType !== 2) {
-    //   throw new Error("Unauthenticated")
-    // }
+  get_exam_by_code: async (parent, { examCode }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 3) {
+      throw new Error("You Dont Have The Permission")
+    }
     try {
       let exam = await Exam.find({ code: examCode })
       exam = exam[0]
-      console.log(exam)
       return {
         ...exam._doc,
         date: new Date(exam._doc.date).toISOString(),
