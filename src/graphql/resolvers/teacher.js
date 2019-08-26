@@ -21,12 +21,7 @@ module.exports = {
       return teachers.map(teacher => {
         return {
           ...teacher._doc,
-          _id: teacher.id,
-          password: null,
-          date: new Date(teacher._doc.date).toISOString(),
-          myAdmin: findAdmin.bind(this, teacher._doc.myAdmin),
-          myExams: findExams.bind(this, teacher._doc.myExams),
-          myStudents: findStudents.bind(this, teacher._doc.myStudents)
+          _id: teacher.id
         }
       })
     } catch (err) {
@@ -43,10 +38,9 @@ module.exports = {
     }
     const { name, password, deptCode, adminID, status } = args.teacherInput
     try {
-      const hashedPassword = await bcrypt.hash(password, 12)
       const teacher = new Teacher({
         name,
-        password: hashedPassword,
+        password,
         deptCode,
         myAdmin: adminID,
         status
@@ -57,12 +51,7 @@ module.exports = {
       await admin.save()
       return {
         ...createdTeacher._doc,
-        _id: createdTeacher.id,
-        password: null,
-        date: new Date(createdTeacher._doc.date).toISOString(),
-        myAdmin: findAdmin.bind(this, createdTeacher._doc.myAdmin),
-        myExams: findExams.bind(this, createdTeacher._doc.myExams),
-        myStudents: findStudents.bind(this, createdTeacher._doc.myStudents)
+        _id: createdTeacher.id
       }
     } catch (err) {
       return new Error("Couldnot find an teacher from resolver" + err)
@@ -73,9 +62,11 @@ module.exports = {
     if (!teacher) {
       throw new Error("Teacher does not exists")
     }
-    const isEqual = await bcrypt.compare(password, teacher.password)
-    if (isEqual === false) {
+    if (password !== teacher.password) {
       throw new Error("Password is incorrect")
+    }
+    if (teacher.status === false) {
+      throw new Error("You were deactivated")
     }
     const token = jwt.sign(
       {
@@ -85,7 +76,7 @@ module.exports = {
       },
       "Iamkira1540",
       {
-        expiresIn: "1h"
+        expiresIn: "3h"
       }
     )
     return {
@@ -106,6 +97,8 @@ module.exports = {
       if (!teacher.myAdmin.equals(admin._id)) {
         throw new Error("This Teacher doesnt belongs to you")
       }
+      admin.myTeachers.pop(teacher)
+      await admin.save()
       const removedTeacher = await Teacher.findByIdAndRemove(teacherID)
       return removedTeacher
     } catch (err) {
@@ -168,12 +161,10 @@ module.exports = {
       }
       const teacher = await Teacher.findOne({ _id: teacherID })
       if (prevPassword !== "" && newPassword !== "") {
-        const isEqual = await bcrypt.compare(prevPassword, teacher.password)
-        if (isEqual === false) {
-          throw new Error("Password is incorrect")
+        if (prevPassword !== newPassword) {
+          throw new Error("Password mismatched")
         }
-        const hashedPassword = await bcrypt.hash(newPassword, 12)
-        teacher.password = hashedPassword
+        teacher.password = newPassword
       }
       const updatedTeacher = await teacher.save()
       return updatedTeacher
@@ -181,6 +172,65 @@ module.exports = {
       return new Error(
         "Couldnot change password of Teacher from resolver" + err
       )
+    }
+  },
+  get_teacher_by_id: async (parent, { teacherID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    try {
+      const teacher = await Teacher.findById(teacherID)
+      return teacher
+    } catch (ex) {
+      throw new Error("Teacher not found")
+    }
+  },
+  updateTeacherStatus: async (parent, { status, teacherID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 1) {
+      throw new Error("You Dont Have The Permission")
+    }
+    try {
+      const teacher = await Teacher.findById(teacherID)
+      if (!teacher) return false
+      teacher.status = status
+      await teacher.save()
+      return true
+    } catch (ex) {
+      throw new Error("Error updating status of teacher")
+    }
+  },
+  addMultipleTeacher: async (parent, { adminID, multipleTeacherInput }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 1) {
+      throw new Error("You Dont Have The Permission")
+    }
+    try {
+      const teachers = multipleTeacherInput.map(t => {
+        return {
+          name: t.name,
+          password: t.password,
+          deptCode: t.deptCode,
+          status: t.status,
+          myAdmin: adminID
+        }
+      })
+      const data = await Teacher.insertMany(teachers);
+      const admin = await Admin.findById(adminID)
+      data.map(t => {
+        admin.myTeachers.push(t)
+      })
+      await admin.save()
+      return data
+    } catch (ex) {
+      throw new Error("Couldn't add multiple teachers" + ex)
     }
   }
 }

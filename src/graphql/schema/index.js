@@ -3,39 +3,39 @@ type Admin {
     _id: ID!
     name: String!
     password: String
-    date: String!
     myTeachers: [Teacher!]
-    myStudents: [Student!]
+    date: String
 }
 type Teacher {
     _id: ID!
     name: String!
     password: String
     status: Boolean
-    deptCode: String!
+    deptCode: String
     myAdmin: Admin
     myExams: [Exam!]
     myStudents: [Student!]
-    date: String!
+    date: String
 }
 type Student {
     _id: ID!
-    name: String
+    name: String!
     password: String
-    studentID: String
-    status: Boolean
+    studentID: String!
+    status: Boolean!
+    submitStatus: Boolean!
     myExams: [Exam!]
     myAnswers: [Answer!]
     myResults: [Result!]
     myTeacher: Teacher
-    date: String!
+    date: String
 }
 type Exam {
-    _id: ID
-    title: String
-    code: String
-    password: String
+    _id: ID!
+    title: String!
+    code: String!
     totalMarks: Int
+    password: String
     examDate: String
     totalTimeInMin: Int
     status: Boolean
@@ -44,9 +44,17 @@ type Exam {
     students: [Student!]
     teacher: Teacher!
     result: Result
-    semester: String!
-    year: Int!
+    semester: String
+    year: Int
+    chats:[Chat]
+    loggedInStudents: [Student]
+    restrictedStudents: [Student]
+    submittedStudents: [Student]
     date: String
+}
+type Chat {
+    from: String!
+    message: String
 }
 type Course {
     title: String
@@ -89,6 +97,16 @@ type authData {
     token: String!
 }
 
+type File {
+    id: ID!
+    path: String!
+    filename: String!
+    mimetype: String!
+    encoding: String!
+  }
+
+scalar Upload
+
 input AdminInput {
     name: String!
     password: String!
@@ -101,6 +119,25 @@ input TeacherInput {
     deptCode: String!
     adminID: String!
 }
+input MultipleTeacherField {
+    name: String!
+    password: String!
+    status: Boolean
+    deptCode: String!
+}
+input MultipleTeacherInput {
+    name: String!
+    password: String!
+    status: Boolean
+    deptCode: String!
+}
+input MultipleStudentInput {
+    name: String!
+    studentID: String!
+    status: Boolean
+    password: String! 
+}
+
 input TeacherUpdateInput {
     _id: ID!
     name: String!
@@ -184,32 +221,51 @@ input AssignInput {
     studentIDs: [String]!
 }
 
+input UploadFileInput {
+    files: Upload
+    name: String
+  }
+
 type Query {
     get_all_admins: [Admin!]!
     get_all_teachers (adminID: String!): [Teacher!]!
     get_all_students (teacherID: String!): [Student!]!
     get_question_by_exam(examID : String!): Question
-    get_all_exams (teacherID: String!, semester: String!, year: String!): [Exam!]!
-    get_exam_by_code (examCode: String!) : Exam!
+    get_all_exams (teacherID: String!): [Exam!]!
+    get_exam_by_id (examID: String!) : Exam!
+    get_teacher_by_id (teacherID: String!) : Teacher!
+    get_student_by_id (studentID: String!) : Student!
+    get_logged_in_students (examID: String!) : [Student]
     adminLogin (name: String!, password: String!) : authData!
     teacherLogin (name: String!, password: String!) : authData!
     studentLogin (examCode: String!, examPassword: String!, studentID: String!, studentPassword: String!) : authData!
+    logoutStudent(studentID: String!, examID: String!) : Boolean
 }
 type Mutation {
     addAdmin(adminInput: AdminInput): Admin!
     changeAdminPassword(prevPassword: String!, newPassword: String!, adminID: String!): Admin!
     changeTeacherPassword(prevPassword: String!, newPassword: String!, teacherID: String!): Teacher!
     addTeacher(teacherInput: TeacherInput): Teacher!
+    addMultipleTeacher(multipleTeacherInput: [MultipleTeacherInput]!, adminID: String!): [Teacher!]
+    addMultipleStudent(multipleStudentInput: [MultipleStudentInput]!, teacherID: String!): [Student!]
     removeTeacher (teacherID: String!, adminID: String) : Teacher!
     updateTeacher (teacherUpdateInput: TeacherUpdateInput) : Teacher!
+    updateTeacherStatus (status: Boolean!, teacherID: String!) : Boolean!
     addStudent(studentInput: StudentInput): Student!
     removeStudent (studentID: String!, teacherID: String!) : Student!
     updateStudent (studentUpdateInput: StudentUpdateInput) : Student!
     assign_students_to_exam (assignInput: AssignInput): Boolean!
+    restrictStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
+    permitStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
     updateExam (examUpdateInput: ExamUpdateInput) : Exam!
     changeExamStatus (status: Boolean!, examID: String!) : Boolean
     addExam(examInput: ExamInput): Exam!
     removeExam(examID: String!, teacherID: String!): Exam!
     addQuestion(questionInput: QuestionInput!): Question!
+    uploadFile(input: UploadFileInput!): Boolean!
+}
+type Subscription {
+    count: Int!
+    studentLoggedIn(exam_id: String!) : Student!
 }
 `

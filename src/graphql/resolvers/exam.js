@@ -4,13 +4,6 @@ const Teacher = require("../../models/teacher")
 const Student = require("../../models/student")
 const isAuth = require("../../middleware/is-auth")
 
-const {
-  findQuestion,
-  findStudents,
-  findTeacher,
-  findResult
-} = require("../resolvers/merger")
-
 module.exports = {
   addExam: async (parent, args, ctx, info) => {
     const authData = isAuth(ctx.request)
@@ -57,11 +50,7 @@ module.exports = {
       return {
         ...createdExam._doc,
         _id: createdExam.id,
-        date: new Date(createdExam._doc.date).toISOString(),
-        question: findQuestion.bind(this, createdExam._doc.question),
-        students: findStudents.bind(this, createdExam._doc.students),
-        teacher: findTeacher.bind(this, createdExam._doc.teacher),
-        result: findResult.bind(this, createdExam._doc.result)
+        date: new Date(createdExam._doc.date).toISOString()
       }
     } catch (ex) {
       return new Error("Couldnot add any exams " + ex)
@@ -77,20 +66,31 @@ module.exports = {
     }
     try {
       const exams = await Exam.find({
-        teacher: teacherID,
-        semester: semester,
-        year: year
+        teacher: teacherID
       })
       return exams.map(exam => {
         return {
           ...exam._doc,
-          date: new Date(exam._doc.date).toISOString(),
-          question: findQuestion.bind(this, exam.question),
-          students: findStudents.bind(this, exam.students),
-          teacher: findTeacher.bind(this, exam.teacher),
-          result: findResult.bind(this, exam.result)
+          _id: exam.id,
+          date: new Date(exam._doc.date).toISOString()
         }
       })
+    } catch (err) {
+      return new Error("Couldnot find a Exam " + err)
+    }
+  },
+  get_exam_by_id: async (parent, { examID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    try {
+      const exam = await Exam.findById(examID)
+      return {
+        ...exam._doc,
+        _id: exam.id,
+        date: new Date(exam._doc.date).toISOString()
+      }
     } catch (err) {
       return new Error("Couldnot find a Exam " + err)
     }
@@ -184,36 +184,12 @@ module.exports = {
     }
     try {
       const exam = await Exam.find({ _id: examID })
-      console.log(exam)
       if (!exam) return
       exam[0].status = status
       await exam[0].save()
       return true
     } catch (ex) {
       throw new Error("Could not change status of the exam" + ex)
-    }
-  },
-  get_exam_by_code: async (parent, { examCode }, ctx, info) => {
-    const authData = isAuth(ctx.request)
-    if (!authData) {
-      throw new Error("Not Authorized")
-    }
-    if (authData.accessType !== 3) {
-      throw new Error("You Dont Have The Permission")
-    }
-    try {
-      let exam = await Exam.find({ code: examCode })
-      exam = exam[0]
-      return {
-        ...exam._doc,
-        date: new Date(exam._doc.date).toISOString(),
-        question: findQuestion.bind(this, exam.question),
-        students: findStudents.bind(this, exam.students),
-        teacher: findTeacher.bind(this, exam.teacher),
-        result: findResult.bind(this, exam.result)
-      }
-    } catch (ex) {
-      throw new Error("Could not find any exam " + ex)
     }
   }
 }

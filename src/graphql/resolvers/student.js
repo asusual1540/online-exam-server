@@ -5,14 +5,6 @@ const Teacher = require("../../models/teacher")
 const Exam = require("../../models/exam")
 const isAuth = require("../../middleware/is-auth")
 
-const {
-  findExams,
-  findAnswers,
-  findResults,
-  findTeacher,
-  findStudents
-} = require("../resolvers/merger")
-
 module.exports = {
   addStudent: async (parent, args, ctx, info) => {
     const authData = isAuth(ctx.request)
@@ -38,11 +30,7 @@ module.exports = {
       return {
         ...student._doc,
         _id: student.id,
-        date: new Date(student._doc.date).toISOString(),
-        myExams: findExams.bind(this, student._doc.myExams),
-        myAnswers: findAnswers.bind(this, student._doc.myAnswers),
-        myResults: findResults.bind(this, student._doc.myResults),
-        myTeacher: findTeacher.bind(this, student._doc.myTeacher)
+        date: new Date(student._doc.date).toISOString()
       }
     } catch (ex) {
       return new Error("Couldnot find any Students " + ex)
@@ -62,11 +50,7 @@ module.exports = {
         return {
           ...student._doc,
           _id: student.id,
-          date: new Date(student._doc.date).toISOString(),
-          myExams: findExams.bind(this, student._doc.myExams),
-          myAnswers: findAnswers.bind(this, student._doc.myAnswers),
-          myResults: findResults.bind(this, student._doc.myResults),
-          myTeacher: findTeacher.bind(this, student._doc.myTeacher)
+          date: new Date(student._doc.date).toISOString()
         }
       })
     } catch (err) {
@@ -87,6 +71,8 @@ module.exports = {
       if (!student.myTeacher.equals(teacher._id)) {
         throw new Error("This Student doesnt belongs to you")
       }
+      teacher.myStudents.pop(student)
+      await teacher.save()
       const removedStudent = await Student.findByIdAndRemove(studentID)
       return removedStudent
     } catch (err) {
@@ -154,28 +140,18 @@ module.exports = {
     try {
       const exam = await Exam.findById(examID)
       if (!exam) {
-        console.log("Couldn't find any exam")
-        return
+        return new Error("Couldn't find any exam")
       }
-      const teacher = await Teacher.find({ _id: teacherID })
-      const students_of_teacher = await Student.find({
-        _id: { $in: teacher[0].myStudents }
+      const students = await Student.find({
+        _id: { $in: studentIDs }
       })
-      await Promise.all(
-        students_of_teacher.map(model => {
-          if (studentIDs.includes(`${model._id}`)) {
-            model.status = true
-            if (!model.myExams.includes(exam._id)) {
-              model.myExams.push(exam)
-            } else {
-              console.log("Already assigned this student")
-            }
-          } else {
-            model.status = false
-          }
-          return model.save()
-        })
-      )
+      if (!students) {
+        return new Error("Could not find any students")
+      }
+      exam.students = undefined
+      await exam.save()
+      exam.students = studentIDs
+      await exam.save()
       return true
     } catch (err) {
       return new Error("Couldnot assign students " + err)
@@ -184,12 +160,13 @@ module.exports = {
   studentLogin: async (
     parent,
     { examCode, examPassword, studentID, studentPassword },
-    ctx,
+    { pubsub },
     info
   ) => {
     try {
       const student = await Student.findOne({ studentID: studentID })
       const exam = await Exam.findOne({ code: examCode })
+
       if (!student) {
         throw new Error("Student does not exists")
       }
@@ -203,22 +180,163 @@ module.exports = {
       if (examPassword !== exam.password) {
         throw new Error("Exam Password is incorrect")
       }
+      if (!exam.students.includes(student._id)) {
+        return new Error("You are not permitted for this exam")
+      }
+      if (exam.restrictedStudents.includes(student._id)) {
+        return new Error("You were restricted for this exam")
+      }
+      if (exam.submittedStudents.includes(student._id)) {
+        return new Error("You have already taken this exam")
+      }
+      exam.loggedInStudents.push(student)
+      await exam.save()
       const token = jwt.sign(
         {
           studentID: student.id,
-          examCode: exam.code,
+          name: student.name,
+          exam_id: exam.id,
           accessType: student.accessType
         },
         "Iamkira1540",
         {
-          expiresIn: "2h"
+          expiresIn: "3h"
         }
       )
+      pubsub.publish(`EXAM ${exam.id}`, {
+        studentLoggedIn: student
+      })
       return {
         token: token
       }
     } catch (ex) {
       throw new Error(ex)
+    }
+  },
+  get_student_by_id: async (parent, { studentID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 3) {
+      throw new Error("You Dont Have The Permission")
+    }
+    try {
+      let student = await Student.findOne({ _id: studentID })
+      return {
+        ...student._doc,
+        _id: student.id,
+        password: null,
+        date: new Date(student._doc.date).toISOString()
+      }
+    } catch (ex) {
+      throw new Error("Can not get any students" + ex)
+    }
+  },
+  logoutStudent: async (parent, { studentID, examID }, ctx, info) => {
+    console.log("called")
+    try {
+      const student = await Student.findOne({ _id: studentID })
+      console.log("found student" + student)
+      const exam = await Exam.findOne({ _id: examID })
+      console.log("found exam" + exam)
+      exam.loggedInStudents.pop(student)
+      await exam.save()
+      return true
+    } catch (ex) {
+      console.log(ex)
+      return false
+    }
+  },
+  get_logged_in_students: async (parent, { examID }, ctx, info) => { },
+  addMultipleStudent: async (parent, { teacherID, multipleStudentInput }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
+    try {
+      const students = multipleStudentInput.map(t => {
+        return {
+          name: t.name,
+          password: t.password,
+          studentID: t.studentID,
+          status: t.status,
+          myTeacher: teacherID
+        }
+      })
+      const data = await Student.insertMany(students);
+      const teacher = await Teacher.findById(teacherID)
+      data.map(t => {
+        teacher.myStudents.push(t)
+      })
+      await teacher.save()
+      return data
+    } catch (ex) {
+      throw new Error("Couldn't add multiple students" + ex)
+    }
+  },
+  restrictStudentByID: async (parent, { studentID, teacherID, examID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
+
+    try {
+      const student = await Student.findOne({ _id: studentID })
+      const teacher = await Teacher.findOne({ _id: teacherID })
+      const exam = await Exam.findOne({ _id: examID })
+      if (!teacher.myStudents.includes(student._id)) {
+        throw new Error("Student Doesnt belong to you")
+      }
+      if (!exam.students.includes(student._id)) {
+        throw new Error("Student was not assigned to this exam")
+      }
+      if (exam.restrictedStudents.includes(student._id)) {
+        throw new Error("Student was restricted to this exam earlier")
+      }
+      exam.restrictedStudents.push(student)
+      if (exam.loggedInStudents.includes(student._id)) {
+        exam.loggedInStudents.pop(student)
+      }
+      await exam.save()
+      return true
+    } catch (ex) {
+      throw new Error("Couldnot restrict the student" + ex)
+    }
+  },
+  permitStudentByID: async (parent, { studentID, teacherID, examID }, ctx, info) => {
+    const authData = isAuth(ctx.request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
+
+    try {
+      const student = await Student.findOne({ _id: studentID })
+      const teacher = await Teacher.findOne({ _id: teacherID })
+      const exam = await Exam.findOne({ _id: examID })
+      if (!teacher.myStudents.includes(student._id)) {
+        throw new Error("Student Doesnt belong to you")
+      }
+      if (!exam.students.includes(student._id)) {
+        throw new Error("Student was not assigned to this exam")
+      }
+      if (!exam.restrictedStudents.includes(student._id)) {
+        throw new Error("Student was not restricted to this exam earlier")
+      }
+      exam.restrictedStudents.pop(student)
+      await exam.save()
+      return true
+    } catch (ex) {
+      throw new Error("Couldnot permit the student" + ex)
     }
   }
 }

@@ -6,6 +6,7 @@ const { findExam } = require("./merger")
 
 module.exports = {
   addQuestion: async (parent, args, ctx, info) => {
+    console.log("Entered")
     const authData = isAuth(ctx.request)
     if (!authData) {
       throw new Error("Not Authorized")
@@ -38,11 +39,11 @@ module.exports = {
           }
         )
       }
+      console.log("updated")
       return {
         ...question._doc,
         _id: question.id,
-        date: new Date(question._doc.date).toISOString(),
-        exam: findExam.bind(this, question._doc.exam)
+        date: new Date(question._doc.date).toISOString()
       }
     } catch (ex) {
       return new Error("Couldnot add any question " + ex)
@@ -62,8 +63,7 @@ module.exports = {
         return {
           ...question._doc,
           _id: question.id,
-          date: new Date(question._doc.date).toISOString(),
-          exam: findExam.bind(this, question._doc.exam)
+          date: new Date(question._doc.date).toISOString()
         }
       }
     } catch (err) {

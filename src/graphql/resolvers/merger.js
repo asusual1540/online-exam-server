@@ -13,8 +13,7 @@ async function findAdmin(adminID) {
       ...admin._doc,
       _id: admin.id,
       password: null,
-      myTeachers: findTeachers.bind(this, admin._doc.myTeachers),
-      myStudents: findStudents.bind(this, admin._doc.myStudents)
+      myTeachers: findTeachers.bind(this, admin._doc.myTeachers)
     }
   } catch (err) {
     return new Error("Couldnot find an admin from Merger" + err)
@@ -29,9 +28,9 @@ async function findTeachers(teacherIDS) {
         ...teacher._doc,
         _id: teacher.id,
         date: new Date(teacher._doc.date).toISOString(),
-        myAdmin: findAdmin.bind(this, teacher.myAdmin),
-        myExams: findExams.bind(this, teacher.myExams),
-        myStudents: findStudents.bind(this, teacher.myStudents)
+        myAdmin: findAdmin.bind(this, teacher._doc.myAdmin),
+        myExams: findExams.bind(this, teacher._doc.myExams),
+        myStudents: findStudents.bind(this, teacher._doc.myStudents)
       }
     })
   } catch (err) {
@@ -40,12 +39,14 @@ async function findTeachers(teacherIDS) {
 }
 
 async function findTeacher(teacherID) {
+  console.log("Reached findTeacher")
   try {
+    console.log("Teacher")
     const teacher = await Teacher.findById(teacherID)
+    console.log(teacher)
     return {
       ...teacher._doc,
       _id: teacher.id,
-      password: null,
       myAdmin: findAdmin.bind(this, teacher._doc.myAdmin),
       myExams: findExams.bind(this, teacher._doc.myExams),
       myStudents: findStudents.bind(this, teacher._doc.myStudents)
@@ -63,10 +64,10 @@ async function findExams(examIDs) {
         ...exam._doc,
         _id: exam.id,
         date: new Date(exam._doc.date).toISOString(),
-        question: findQuestion.bind(this, exam.question),
-        students: findStudents.bind(this, exam.students),
-        teacher: findTeacher.bind(this, exam.teacher),
-        result: findResult.bind(this, exam.result)
+        question: findQuestion.bind(this, exam._doc.question),
+        students: findStudents.bind(this, exam._doc.students),
+        teacher: findTeacher.bind(this, exam._doc.teacher),
+        result: findResult.bind(this, exam._doc.result)
       }
     })
   } catch (err) {
@@ -97,7 +98,6 @@ async function findQuestions(questionIDs) {
         ...question._doc,
         _id: question.id,
         date: new Date(question._doc.date).toISOString(),
-        teacher: findTeacher.bind(this, question.teacher),
         exam: findExam.bind(this, question.exam)
       }
     })
@@ -112,7 +112,6 @@ async function findQuestion(questionID) {
     return {
       ...question._doc,
       _id: question.id,
-      teacher: findTeacher.bind(this, question._doc.teacher),
       exam: findExam.bind(this, question._doc.exam)
     }
   } catch (err) {
@@ -131,7 +130,7 @@ async function findStudents(studentIDs) {
         myExams: findExams.bind(this, student._doc.myExams),
         myAnswers: findAnswers.bind(this, student._doc.myAnswers),
         myResults: findResults.bind(this, student._doc.myResults),
-        myAdmin: findAdmin.bind(this, student._doc.myAdmin)
+        myTeacher: findTeacher.bind(this, student._doc.myTeacher)
       }
     })
   } catch (err) {
@@ -146,10 +145,10 @@ async function findStudent(studentID) {
       ...student._doc,
       _id: student.id,
       date: new Date(student._doc.date).toISOString(),
-      myExams: findExams.bind(this, student.myExams),
-      myAnswers: findAnswers.bind(this, student.myAnswers),
-      myResults: findResults.bind(this, student.myResults),
-      myAdmin: findAdmin.bind(this, student._doc.myAdmin)
+      myExams: findExams.bind(this, student._doc.myExams),
+      myAnswers: findAnswers.bind(this, student._doc.myAnswers),
+      myResults: findResults.bind(this, student._doc.myResults),
+      myTeacher: findTeacher.bind(this, student._doc.myTeacher)
     }
   } catch (err) {
     return new Error("Couldnot find a student " + err)
@@ -164,9 +163,9 @@ async function findAnswers(answerIDs) {
         ...answer._doc,
         _id: answer.id,
         date: new Date(answer._doc.date).toISOString(),
-        student: findStudent.bind(this, answer.student),
-        question: findQuestion.bind(this, answer.question),
-        exam: findExam.bind(this, answer.exam)
+        student: findStudent.bind(this, answer._doc.student),
+        question: findQuestion.bind(this, answer._doc.question),
+        exam: findExam.bind(this, answer._doc.exam)
       }
     })
   } catch (err) {
@@ -181,9 +180,9 @@ async function findAnswer(answerID) {
       ...answer._doc,
       _id: answer.id,
       date: new Date(answer._doc.date).toISOString(),
-      student: findStudent.bind(this, answer.student),
-      question: findQuestion.bind(this, answer.question),
-      exam: findExam.bind(this, answer.exam)
+      student: findStudent.bind(this, answer._doc.student),
+      question: findQuestion.bind(this, answer._doc.question),
+      exam: findExam.bind(this, answer._doc.exam)
     }
   } catch (err) {
     return new Error("Couldnot find an exam " + err)
@@ -198,8 +197,8 @@ async function findResults(resultIDs) {
         ...result._doc,
         _id: result.id,
         date: new Date(result._doc.date).toISOString(),
-        student: findStudent.bind(this, result.student),
-        exam: findExam.bind(this, result.exam)
+        student: findStudent.bind(this, result._doc.student),
+        exam: findExam.bind(this, result._doc.exam)
       }
     })
   } catch (err) {

@@ -5,7 +5,7 @@ const teacherSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 3,
-        maxlength: 20
+        maxlength: 100
     },
     password: {
         type: String,
@@ -40,11 +40,7 @@ const teacherSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Student',
         }
-    ],
-    date: {
-        type: Date,
-        default: Date.now
-    }
+    ]
 })
 
 const Teacher = mongoose.model("Teacher", teacherSchema)

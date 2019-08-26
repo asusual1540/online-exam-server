@@ -1,19 +1,20 @@
-const { GraphQLServer } = require("graphql-yoga")
+const { GraphQLServer, PubSub } = require("graphql-yoga")
 const mongoose = require("mongoose")
-
 const schema = require("./graphql/schema/index")
 const resolvers = require("./graphql/resolvers/index")
 
 const typeDefs = schema
 
 const port = process.env.PORT || 4000
+const pubsub = new PubSub()
 
 const server = new GraphQLServer({
   typeDefs,
   resolvers,
   context(request) {
     return {
-      request
+      request,
+      pubsub
     }
   }
 })
@@ -21,7 +22,10 @@ const server = new GraphQLServer({
 mongoose
   .connect(
     "mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center",
-    { useNewUrlParser: true }
+    {
+      useNewUrlParser: true,
+      useCreateIndex: true
+    }
   )
   .then(() => {
     console.log("Successfully connected to Mongodb")

@@ -3,8 +3,6 @@ const jwt = require("jsonwebtoken")
 const Admin = require("../../models/admin")
 const isAuth = require("../../middleware/is-auth")
 
-const { findTeachers, findStudents } = require("../resolvers/merger")
-
 module.exports = {
   addAdmin: async (parent, args, ctx, info) => {
     const name = args.adminInput.name
@@ -25,9 +23,7 @@ module.exports = {
       return {
         ...createdAdmin._doc,
         password: null,
-        date: new Date(createdAdmin._doc.date).toISOString(),
-        myTeachers: findTeachers.bind(this, createdAdmin._doc.myTeachers),
-        myStudents: findStudents.bind(this, createdAdmin._doc.myStudents)
+        date: new Date(createdAdmin._doc.date).toISOString()
       }
     } catch (err) {
       return new Error("Couldnot add an admin" + err)
@@ -40,9 +36,7 @@ module.exports = {
         return {
           ...admin._doc,
           password: null,
-          date: new Date(admin._doc.date).toISOString(),
-          myTeachers: findTeachers.bind(this, admin._doc.myTeachers),
-          myStudents: findStudents.bind(this, admin._doc.myStudents)
+          date: new Date(admin._doc.date).toISOString()
         }
       })
     } catch (err) {
