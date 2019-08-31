@@ -39,11 +39,8 @@ async function findTeachers(teacherIDS) {
 }
 
 async function findTeacher(teacherID) {
-  console.log("Reached findTeacher")
   try {
-    console.log("Teacher")
     const teacher = await Teacher.findById(teacherID)
-    console.log(teacher)
     return {
       ...teacher._doc,
       _id: teacher.id,

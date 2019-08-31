@@ -191,5 +191,31 @@ module.exports = {
     } catch (ex) {
       throw new Error("Could not change status of the exam" + ex)
     }
+  },
+  stopExam: async (parent, { examID, teacherID }, { request, pubsub }, info) => {
+    const authData = isAuth(request)
+    if (!authData) {
+      throw new Error("Not Authorized")
+    }
+    if (authData.accessType !== 2) {
+      throw new Error("You Dont Have The Permission")
+    }
+    try {
+      const exam = await Exam.findById(examID)
+      const teacher = await Teacher.findById(teacherID)
+      if (!exam.teacher.equals(teacher._id)) {
+        throw new Error("This Exam doesnt belongs to you")
+      }
+      exam.status = false
+      await exam.save()
+
+      pubsub.publish(`STOP_EXAM ${exam.id}`, {
+        onExamStop: true
+      })
+
+      return true
+    } catch (err) {
+      throw new Error("Could not stop the Exam" + err)
+    }
   }
 }

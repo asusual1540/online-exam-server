@@ -6,7 +6,6 @@ const { findExam } = require("./merger")
 
 module.exports = {
   addQuestion: async (parent, args, ctx, info) => {
-    console.log("Entered")
     const authData = isAuth(ctx.request)
     if (!authData) {
       throw new Error("Not Authorized")
@@ -17,6 +16,7 @@ module.exports = {
     const examID = args.questionInput.exam
     const IncomingQuestions = [...args.questionInput.questions]
     const existingQuestion = await Question.findOne({ exam: examID })
+
     let question = {}
     try {
       if (existingQuestion) {
@@ -24,12 +24,15 @@ module.exports = {
           questions: IncomingQuestions
         })
         question = await existingQuestion.save()
+
       } else {
         const newQuestion = new Question({
           exam: examID,
           questions: IncomingQuestions
         })
+        console.log("Before save" + JSON.stringify(newQuestion))
         question = await newQuestion.save()
+        console.log("After save" + JSON.stringify(question))
         await Exam.updateOne(
           { _id: examID },
           {

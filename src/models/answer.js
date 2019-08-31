@@ -13,7 +13,12 @@ const answerSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Exam"
     },
-    answers: [Boolean],
+    answers: [{
+        _id: false,
+        questionIndex: Number,
+        studentAnswer: Number
+    }],
+    myMarks: Number,
     date: {
         type: Date,
         default: Date.now

@@ -49,6 +49,9 @@ type Exam {
     chats:[Chat]
     loggedInStudents: [Student]
     restrictedStudents: [Student]
+    temporaryRestrictedStudents: [Student]
+    restrictAndSubmitStudentByID: [Student]
+    permanentRestrictStudentByID: [Student]
     submittedStudents: [Student]
     date: String
 }
@@ -83,8 +86,13 @@ type Answer {
     student: Student
     question: Question
     exam: Exam
-    answers: [Boolean]
-    date: String!
+    answers: [StdAns]
+    myMarks : Int
+    date: String
+}
+type StdAns {
+    questionIndex : Int
+    studentAnswer : Int
 }
 type Result {
     _id: ID!
@@ -230,16 +238,19 @@ type Query {
     get_all_admins: [Admin!]!
     get_all_teachers (adminID: String!): [Teacher!]!
     get_all_students (teacherID: String!): [Student!]!
+    get_assigned_student (teacherID: String!, examID: String!): [Student!]!
     get_question_by_exam(examID : String!): Question
     get_all_exams (teacherID: String!): [Exam!]!
     get_exam_by_id (examID: String!) : Exam!
     get_teacher_by_id (teacherID: String!) : Teacher!
     get_student_by_id (studentID: String!) : Student!
     get_logged_in_students (examID: String!) : [Student]
+    get_answer_by_students (studentIDs: [String!]!) : [Answer]
     adminLogin (name: String!, password: String!) : authData!
     teacherLogin (name: String!, password: String!) : authData!
     studentLogin (examCode: String!, examPassword: String!, studentID: String!, studentPassword: String!) : authData!
-    logoutStudent(studentID: String!, examID: String!) : Boolean
+    logoutStudent(studentID: String!, examID: String!) : Boolean!
+    quitExam(studentID: String!, examID: String!) : Boolean!
 }
 type Mutation {
     addAdmin(adminInput: AdminInput): Admin!
@@ -247,7 +258,7 @@ type Mutation {
     changeTeacherPassword(prevPassword: String!, newPassword: String!, teacherID: String!): Teacher!
     addTeacher(teacherInput: TeacherInput): Teacher!
     addMultipleTeacher(multipleTeacherInput: [MultipleTeacherInput]!, adminID: String!): [Teacher!]
-    addMultipleStudent(multipleStudentInput: [MultipleStudentInput]!, teacherID: String!): [Student!]
+    addMultipleStudent(multipleStudentInput: [MultipleStudentInput]!, teacherID: String!, examID: String!): [Student!]
     removeTeacher (teacherID: String!, adminID: String) : Teacher!
     updateTeacher (teacherUpdateInput: TeacherUpdateInput) : Teacher!
     updateTeacherStatus (status: Boolean!, teacherID: String!) : Boolean!
@@ -256,16 +267,27 @@ type Mutation {
     updateStudent (studentUpdateInput: StudentUpdateInput) : Student!
     assign_students_to_exam (assignInput: AssignInput): Boolean!
     restrictStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
+    temporaryRestrictStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
+    permanentRestrictStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
+    restrictAndSubmitStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
     permitStudentByID(studentID: String!, teacherID: String!, examID: String!) : Boolean!
     updateExam (examUpdateInput: ExamUpdateInput) : Exam!
     changeExamStatus (status: Boolean!, examID: String!) : Boolean
     addExam(examInput: ExamInput): Exam!
     removeExam(examID: String!, teacherID: String!): Exam!
+    stopExam(examID: String!, teacherID: String!): Boolean!
     addQuestion(questionInput: QuestionInput!): Question!
     uploadFile(input: UploadFileInput!): Boolean!
+    writeAnswer(studentID: String!, examID: String!, question_index: Int!, question_answer: Int!): Boolean!
+    getAnswer(studentID: String!, examID: String!): Answer!
 }
 type Subscription {
     count: Int!
+    onExamStop (exam_id : String!) : Boolean!
     studentLoggedIn(exam_id: String!) : Student!
+    studentLoggedOut(exam_id: String!) : Student!
+    studentQuitWithoutSubmit(exam_id: String!) : Student!
+    permanentStudentRestrict(exam_id: String!, studentID: String!) : Student!
+    temporaryStudentRestrict(exam_id: String!, studentID: String!) : Student!
 }
 `

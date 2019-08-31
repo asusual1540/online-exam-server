@@ -18,7 +18,8 @@ const server = new GraphQLServer({
     }
   }
 })
-
+//adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center
+// mongodb://localhost:27017/oem
 mongoose
   .connect(
     "mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center",

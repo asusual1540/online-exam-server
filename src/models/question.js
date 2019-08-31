@@ -7,11 +7,13 @@ const questionSchema = new mongoose.Schema({
     },
     questions: [
         {
+            _id: false,
             id: Number,
             text: String,
             mark: Number,
             options: [
                 {
+                    _id: false,
                     text: String,
                     id: Number,
                     answer: {
