@@ -39,7 +39,7 @@ const opts = {
   port,
   cors: {
     credentials: true,
-    origin: ["http://localhost:3000"]
+    origin: [process.env.FRONTEND_URL, process.env.PAST_FRONTEND_URL]
   }
 }
 

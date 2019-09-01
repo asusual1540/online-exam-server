@@ -190,8 +190,8 @@ module.exports = {
     info
   ) => {
     try {
-      const student = await Student.findOne({ studentID: studentID })
       const exam = await Exam.findOne({ code: examCode })
+      const student = await Student.findOne({ studentID: studentID })
 
       if (!student) {
         throw new Error("Student does not exists")
