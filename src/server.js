@@ -36,12 +36,17 @@ mongoose
   })
 
 const opts = {
-  port,
-  cors: {
-    credentials: true,
-    origin: [process.env.FRONTEND_URL, process.env.PAST_FRONTEND_URL]
-  }
+  port
 }
+
+server.express.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
+  next();
+});
 
 server.start(opts, () => {
   console.log("Server is running on port " + port)
