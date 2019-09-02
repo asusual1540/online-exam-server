@@ -5,7 +5,6 @@ const resolvers = require("./graphql/resolvers/index")
 
 const typeDefs = schema
 
-const port = process.env.PORT || 4000
 const pubsub = new PubSub()
 
 const server = new GraphQLServer({
@@ -36,7 +35,7 @@ mongoose
   })
 
 const opts = {
-  port
+
 }
 
 server.express.use(function (req, res, next) {

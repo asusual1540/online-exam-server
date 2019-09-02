@@ -282,12 +282,12 @@ type Mutation {
     getAnswer(studentID: String!, examID: String!): Answer!
 }
 type Subscription {
-    count: Int!
-    onExamStop (exam_id : String!) : Boolean!
-    studentLoggedIn(exam_id: String!) : Student!
-    studentLoggedOut(exam_id: String!) : Student!
-    studentQuitWithoutSubmit(exam_id: String!) : Student!
-    permanentStudentRestrict(exam_id: String!, studentID: String!) : Student!
-    temporaryStudentRestrict(exam_id: String!, studentID: String!) : Student!
+    count: Int
+    onExamStop (exam_id : String!) : Boolean
+    studentLoggedIn(exam_id: String!) : Student
+    studentLoggedOut(exam_id: String!) : Student
+    studentQuitWithoutSubmit(exam_id: String!) : Student
+    permanentStudentRestrict(exam_id: String!, studentID: String!) : Student
+    temporaryStudentRestrict(exam_id: String!, studentID: String!) : Student
 }
 `
