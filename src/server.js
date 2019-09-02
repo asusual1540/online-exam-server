@@ -48,5 +48,5 @@ server.express.use(function (req, res, next) {
 });
 
 server.start(opts, () => {
-  console.log("Server is running on port " + port)
+  console.log("Server is running")
 })
