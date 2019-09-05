@@ -97,6 +97,14 @@ server.express.post('/api/upload', function (req, res) {
   })
 })
 
-server.start(() => {
+const opts = {
+  port: 4000,
+  cors: {
+    credentials: true,
+    origin: ["https://salty-oasis-44321.herokuapp.com", "http://localhost:3000"] // your frontend url.
+  }
+};
+
+server.start(opts, () => {
   console.log("Server is running")
 })
