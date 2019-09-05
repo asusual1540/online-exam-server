@@ -213,7 +213,8 @@ module.exports = {
         return new Error("You were restricted for this exam")
       }
       if (exam.temporaryRestrictedStudents.includes(student._id)) {
-        return new Error("You were temporarily restricted for this exam. Request teacher to permit you again")
+        return new Error(`You were temporarily restricted for this exam.
+                          Request teacher to permit you again`)
       }
       if (exam.submittedStudents.includes(student._id)) {
         return new Error("You have already taken this exam")
@@ -285,7 +286,8 @@ module.exports = {
         for (let j = 0; j < 4; j++) {
           if (questions[i]["options"][j]["answer"] === true) {
             for (let k = 0; k < answers.length; k++) {
-              if (answers[k]["questionIndex"] === questions[i]["id"] && answers[k]["studentAnswer"] === (j + 1)) {
+              if (answers[k]["questionIndex"] === questions[i]["id"]
+                && answers[k]["studentAnswer"] === (j + 1)) {
                 marks += questions[i]["mark"]
               }
             }

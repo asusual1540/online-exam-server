@@ -9,6 +9,7 @@ const questionSchema = new mongoose.Schema({
         {
             _id: false,
             id: Number,
+            image: String,
             text: String,
             mark: Number,
             options: [

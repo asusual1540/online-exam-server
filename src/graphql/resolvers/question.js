@@ -20,19 +20,38 @@ module.exports = {
     let question = {}
     try {
       if (existingQuestion) {
+        console.log(existingQuestion)
+        console.log("exists block ran")
+        const fuka = IncomingQuestions.map((q, i) => {
+          if (existingQuestion.questions[i]) {
+            return {
+              id: q.id,
+              text: q.text,
+              mark: q.mark,
+              options: q.options,
+              image: existingQuestion.questions[i].image
+            }
+          } else {
+            return {
+              id: q.id,
+              text: q.text,
+              mark: q.mark,
+              options: q.options,
+              image: ""
+            }
+          }
+        })
         existingQuestion.set({
-          questions: IncomingQuestions
+          questions: fuka
         })
         question = await existingQuestion.save()
-
       } else {
+        console.log("else block ran")
         const newQuestion = new Question({
           exam: examID,
           questions: IncomingQuestions
         })
-        console.log("Before save" + JSON.stringify(newQuestion))
         question = await newQuestion.save()
-        console.log("After save" + JSON.stringify(question))
         await Exam.updateOne(
           { _id: examID },
           {
@@ -42,7 +61,6 @@ module.exports = {
           }
         )
       }
-      console.log("updated")
       return {
         ...question._doc,
         _id: question.id,
@@ -63,6 +81,7 @@ module.exports = {
     try {
       const question = await Question.findOne({ exam: args.examID })
       if (question) {
+        console.log(question)
         return {
           ...question._doc,
           _id: question.id,

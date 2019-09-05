@@ -72,6 +72,7 @@ type SingleQuestion {
     id: Int!
     text: String!
     mark: Int!
+    image: String
     options: [option!]
 }
 
