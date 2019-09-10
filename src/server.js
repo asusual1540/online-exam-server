@@ -15,6 +15,7 @@ const pubsub = new PubSub()
 
 
 //adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center
+//mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center
 // mongodb://localhost:27017/oem
 mongoose
   .connect(
@@ -86,11 +87,11 @@ server.express.post('/api/upload', function (req, res) {
         const e_id = q.e_id
         const q_id = q.q_id
         const q_no = Number(q.q_no)
-        console.log(e_id)
-        console.log(q_id)
-        console.log(q_no)
         try {
           const question = await Question.findOne({ _id: q_id })
+          if (question["questions"].length < q_no + 1) {
+            return res.json({ "error": "You must submit the question data first" })
+          }
           question["questions"][q_no]["image"] = imgUrl
           await question.save()
           return res.json({ "question": question })

@@ -20,6 +20,7 @@ module.exports = {
     let question = {}
     try {
       if (existingQuestion) {
+        console.log("existing question found")
         console.log(existingQuestion)
         console.log("exists block ran")
         const fuka = IncomingQuestions.map((q, i) => {
