@@ -13,21 +13,12 @@ const typeDefs = schema
 
 const pubsub = new PubSub()
 
-const server = new GraphQLServer({
-  typeDefs,
-  resolvers,
-  context(request) {
-    return {
-      request,
-      pubsub
-    }
-  }
-})
+
 //adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center
 // mongodb://localhost:27017/oem
 mongoose
   .connect(
-    "adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center",
+    "mongodb://adnan:adnan1540@ds129625.mlab.com:29625/online-exam-center",
     {
       useNewUrlParser: true,
       useCreateIndex: true
@@ -45,9 +36,22 @@ cloudinary.config({
   api_key: "899686255551365",
   api_secret: "e_c1gq9QHSO3IknVfQXJaYsZ1ok"
 })
+
+
+const server = new GraphQLServer({
+  typeDefs,
+  resolvers,
+  context(request) {
+    return {
+      request,
+      pubsub
+    }
+  },
+  middlewares: []
+})
 //process.env.FRONTEND_URL
 server.express.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', "https://salty-oasis-44321.herokuapp.com");
+  res.header('Access-Control-Allow-Origin', "http://localhost:3000");
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
@@ -103,6 +107,8 @@ const opts = {
     origin: ["https://salty-oasis-44321.herokuapp.com", "http://localhost:3000"] // your frontend url.
   }
 };
+
+
 
 server.start(opts, () => {
   console.log("Server is running")

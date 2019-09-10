@@ -70,7 +70,7 @@ module.exports = {
       return new Error("Couldnot add any question " + ex)
     }
   },
-  get_question_by_exam: async (parent, args, ctx, info) => {
+  get_question_by_exam: async (parent, { examID }, ctx, info) => {
     const authData = isAuth(ctx.request)
     if (!authData) {
       throw new Error("Not Authorized")
@@ -79,9 +79,8 @@ module.exports = {
       throw new Error("You Dont Have The Permission")
     }
     try {
-      const question = await Question.findOne({ exam: args.examID })
+      const question = await Question.findOne({ exam: examID })
       if (question) {
-        console.log(question)
         return {
           ...question._doc,
           _id: question.id,

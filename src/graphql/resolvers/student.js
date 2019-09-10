@@ -191,7 +191,9 @@ module.exports = {
   ) => {
     try {
       const exam = await Exam.findOne({ code: examCode })
-      const student = await Student.findOne({ studentID: studentID })
+      console.log(exam)
+      const students = await Student.find({ _id: { $in: exam.students } })
+      const student = students.find(s => s.studentID === studentID)
 
       if (!student) {
         throw new Error("Student does not exists")
